@@ -19,28 +19,21 @@ class MenuItem:
 
     def run(self):
         return self.func(*self.args)
-
-class ControlScheme:
-    def __init__(self, binds: dict):
-        for action in binds:
-            if isinstance(action, str):
-                action = (action,)
-            if not isinstance(action, tuple):
-                raise Exception("Every keybind must be a string or tuple")
-            
-            setattr(self, action, binds[action])
-
-default_vertical_menu_control_scheme = ControlScheme({
-    "prev": "KEY_UP",
-    "next": "KEY_DOWN",
-    "select": "\n",
-    "break": ""
-})
+    
+scheme_defaults = {
+    "menu_vertical": {
+        "prev": "KEY_UP",
+        "next": "KEY_DOWN",
+        "select": "\n",
+        "break": ""
+    }
+}
 
 class Menu:
-    def __init__(self, app: App, *, items: tuple[MenuItem], controls: ControlScheme = menu_control_scheme):
+    def __init__(self, app: App, *, items: tuple[MenuItem], controls: dict = scheme_defaults["menu_vertical"]):
         self.items = items
         self.selected = -1
+        self.controls = controls
 
     def render(self, y: int = None, x: int = None):
         for i in range(len(self.items)):
@@ -51,3 +44,9 @@ class Menu:
         while True:
             self.render(y, x)
             key = self.parent.stdscr.getkey()
+            for action in self.controls:
+                if key in self.controls[action]:
+                    do_action = action
+                    break
+
+            
